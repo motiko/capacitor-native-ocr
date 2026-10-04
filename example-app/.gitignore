@@ -5,3 +5,6 @@ node_modules/
 .DS_Store
 .sourcemaps
 dist/
+
+# Benchmark corpus copied in by QuickScan's ocr-compare.mjs --export-app (not ours to commit)
+/src/public/bench/

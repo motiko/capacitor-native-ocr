@@ -36,6 +36,21 @@
         padding: 12px;
         border-radius: 8px;
       }
+      #bench-table {
+        border-collapse: collapse;
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+      }
+      #bench-table td,
+      #bench-table th {
+        padding: 4px 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      #bench-output {
+        width: 100%;
+        font: 12px ui-monospace, monospace;
+      }
       .muted {
         color: #666;
         font-size: 14px;
@@ -64,6 +79,15 @@
     </div>
     <p id="summary" class="muted"></p>
     <pre id="text"></pre>
+    <section id="bench" hidden>
+      <h2>Benchmark</h2>
+      <p id="bench-name" class="muted"></p>
+      <button id="bench-run">Run benchmark</button>
+      <button id="bench-copy" disabled>Copy results</button>
+      <p id="bench-status" class="muted"></p>
+      <table id="bench-table"></table>
+      <textarea id="bench-output" rows="6" readonly hidden></textarea>
+    </section>
     <details>
       <summary>Supported languages</summary>
       <p id="supported" class="muted"></p>

@@ -1,5 +1,7 @@
 import { NativeOcr } from 'capacitor-native-ocr';
 
+import { initBench } from './bench.js';
+
 const $ = (id) => document.getElementById(id);
 let imageData = null;
 
@@ -99,3 +101,4 @@ async function loadSample() {
 }
 
 init();
+initBench();
