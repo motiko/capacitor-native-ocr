@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Android: R8 consumer rules ship with the plugin, so apps with minify on build without their own `-dontwarn` for the script models they don't enable.
+
 ## 0.2.0 (2026-10-04)
 
 - `rotation` in the result: how far to turn the image clockwise so its text reads upright (iOS: from the direction Vision's lines run, no extra passes).
