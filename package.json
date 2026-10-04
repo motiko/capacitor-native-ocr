@@ -50,7 +50,8 @@
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
-    "test:ios": "xcodebuild test -scheme CapacitorNativeOcr -destination 'platform=iOS Simulator,name=iPhone 17'"
+    "test:ios": "xcodebuild test -scheme CapacitorNativeOcr -destination 'platform=iOS Simulator,name=iPhone 17'",
+    "test:android": "cd android && ./gradlew test connectedDebugAndroidTest && cd .."
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",

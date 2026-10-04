@@ -6,6 +6,7 @@ Opens with a sample image, recognizes it and draws the block and word boxes over
 npm run build                # in the repo root: build the plugin
 cd example-app
 npm install && npm run build && npx cap sync ios && npx cap open ios
+# Android: npx cap sync android && npx cap open android (or ./gradlew installDebug in android/)
 ```
 
 ## Benchmark
@@ -33,7 +34,7 @@ photos) and scores the copied results against Tesseract:
 # in a QuickScan checkout
 npm run bench:pages && npm run bench:synth -- --seed 1 --positives 100 --negatives 50
 node bench/tools/ocr-compare.mjs --set all --export-app <this repo>/example-app/src/public/bench
-# then in this folder: npm run build && npx cap sync ios, run on a device, Run benchmark, Copy results into results.json
+# then in this folder: npm run build && npx cap sync ios (or android), run on a device, Run benchmark, Copy results into results.json
 node bench/tools/ocr-compare.mjs --set all --native results.json
 ```
 

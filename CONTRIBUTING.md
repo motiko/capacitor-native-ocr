@@ -35,6 +35,10 @@ Build and validate the web and native projects.
 
 This is useful to run in CI to verify that the plugin builds for all platforms.
 
+#### `npm run test:ios` / `npm run test:android`
+
+Run the unit and recognition tests. iOS needs an iPhone Simulator. Android needs JDK 21, the Android SDK (`ANDROID_HOME`) and a running emulator or device: the JVM unit tests (`android/src/test`) cover layout, orientation and language resolution, and the instrumented tests (`android/src/androidTest`) run ML Kit on the iOS fixture images. `cd android && ./gradlew test` runs the JVM tests alone.
+
 #### `npm run lint` / `npm run fmt`
 
 Check formatting and code quality, autoformat/autofix if possible.

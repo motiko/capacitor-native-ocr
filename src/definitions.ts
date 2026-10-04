@@ -2,8 +2,7 @@ export interface NativeOcrPlugin {
   /**
    * Whether on-device recognition works on this platform.
    *
-   * `true` on iOS. `false` on the web, and on Android until its
-   * implementation ships.
+   * `true` on iOS and Android, `false` on the web.
    *
    * @since 0.1.0
    */
@@ -11,10 +10,12 @@ export interface NativeOcrPlugin {
 
   /**
    * The languages the engine can recognize, as BCP-47 tags in the
-   * engine's own spelling (for example `en-US`, `de-DE`, `zh-Hans`).
+   * engine's own spelling (for example `en-US`, `de-DE`, `zh-Hans` on iOS;
+   * `en`, `de`, `zh-Hans` on Android).
    *
    * On iOS the list depends on the recognition level: `fast` supports
-   * fewer languages than `accurate`.
+   * fewer languages than `accurate`. On Android it lists the languages of
+   * the bundled script models; `level` makes no difference.
    *
    * @since 0.1.0
    */
@@ -59,15 +60,20 @@ export interface RecognizeOptions {
   /**
    * BCP-47 tags in priority order, for example `['de-DE', 'en-US']`.
    * A tag that isn't supported as written falls back to a supported tag for
-   * the same language, so `de` and `de-AT` both mean `de-DE`. Omit for the
-   * platform default.
+   * the same language, so `de` and `de-AT` both mean `de-DE` on iOS (and
+   * `de-DE` means `de` on Android). Omit for the platform default.
+   *
+   * On Android the languages pick the script model: the first non-Latin
+   * script requested (Chinese, Devanagari, Japanese or Korean), otherwise
+   * Latin. Each script model also reads Latin text.
    *
    * @since 0.1.0
    */
   languages?: string[];
 
   /**
-   * iOS 16+: let Vision detect the language. Ignored on older versions.
+   * iOS 16+: let Vision detect the language. Ignored on older versions
+   * and on Android.
    *
    * @default true when `languages` is empty, otherwise false
    * @since 0.1.0
@@ -75,13 +81,15 @@ export interface RecognizeOptions {
   detectLanguage?: boolean;
 
   /**
+   * iOS only; Android has one level.
+   *
    * @default 'accurate'
    * @since 0.1.0
    */
   level?: RecognitionLevel;
 
   /**
-   * Let the engine correct words against its language model.
+   * iOS only: let the engine correct words against its language model.
    *
    * @default true
    * @since 0.1.0
@@ -173,7 +181,7 @@ export interface Word {
   box: Box;
   /**
    * 0..1, when the engine reports it. Apple Vision scores whole lines, so
-   * on iOS a word carries its line's confidence.
+   * on iOS a word carries its line's confidence; ML Kit scores each word.
    */
   confidence?: number;
 }

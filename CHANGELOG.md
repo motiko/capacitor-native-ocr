@@ -3,6 +3,9 @@
 ## Unreleased
 
 - `rotation` in the result: how far to turn the image clockwise so its text reads upright (iOS: from the direction Vision's lines run, no extra passes).
+- Android: text recognition with ML Kit Text Recognition v2 and the bundled Latin model, with the same result shape, layout and `rotation` as iOS: word, line and block boxes; receipts read row by row; sideways and upside-down pages ordered as if upright (ML Kit reads them in one pass, so no extra passes); EXIF orientation applied; `isAvailable()` returns `true`.
+- Android: Chinese, Devanagari, Japanese and Korean models as opt-in Gradle flags (`nativeOcrChinese` and so on).
+- Android: `level`, `detectLanguage`, `languageCorrection` and `customWords` are accepted and ignored.
 
 ## 0.1.1 (2026-10-04)
 
