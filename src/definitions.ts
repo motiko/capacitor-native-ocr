@@ -122,6 +122,19 @@ export interface RecognizeResult {
   blocks: Block[];
 
   /**
+   * How far to turn the image clockwise, in degrees, so its text reads
+   * upright: `0` for an upright page, `180` for one upside down, `90` or
+   * `270` for one on its side. Taken from the direction most of the text
+   * runs in; `0` when nothing was recognized.
+   *
+   * Nothing else needs it: `text` already reads in the right order whatever
+   * the rotation, and boxes stay in the coordinates of the image as given.
+   *
+   * @since 0.2.0
+   */
+  rotation: 0 | 90 | 180 | 270;
+
+  /**
    * The dominant language of the recognized text as a BCP-47 tag, when it
    * can be identified.
    *
