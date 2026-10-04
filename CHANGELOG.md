@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `rotation` in the result: how far to turn the image clockwise so its text reads upright (iOS: from the direction Vision's lines run, no extra passes).
+
 ## 0.1.1 (2026-10-04)
 
 - iOS: table columns of short numeric cells are joined into rows, so receipts and invoices read row by row.

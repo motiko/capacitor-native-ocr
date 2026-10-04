@@ -15,6 +15,16 @@ enum TextOrientation: Equatable {
     /// Bottom to top: the page is turned a quarter counter-clockwise.
     case runsUp
 
+    /// Clockwise degrees that turn the image so the text reads upright.
+    var uprightRotation: Int {
+        switch self {
+        case .up: return 0
+        case .runsUp: return 90
+        case .down: return 180
+        case .runsDown: return 270
+        }
+    }
+
     /// The dominant direction among line baselines, each given as a vector in pixels
     /// (top-left origin, y down) and weighted by its length.
     static func dominant(baselines: [(dx: Double, dy: Double)]) -> TextOrientation {

@@ -74,7 +74,8 @@ public class NativeOcrPlugin: CAPPlugin, CAPBridgedPlugin {
         var object: JSObject = [
             "text": result.text,
             "imageSize": ["width": Double(result.imageSize.width), "height": Double(result.imageSize.height)] as JSObject,
-            "blocks": result.blocks.map(json) as JSArray
+            "blocks": result.blocks.map(json) as JSArray,
+            "rotation": result.rotation
         ]
         if let language = result.language {
             object["language"] = language

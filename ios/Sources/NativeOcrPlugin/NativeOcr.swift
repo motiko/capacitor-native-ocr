@@ -18,6 +18,8 @@ struct RecognizeResult {
     var text: String
     var imageSize: CGSize
     var blocks: [OcrBlock]
+    /// Clockwise degrees that turn the image upright: 0, 90, 180 or 270.
+    var rotation: Int
     var language: String?
 }
 
@@ -70,6 +72,7 @@ struct RecognizeResult {
             text: text,
             imageSize: image.orientedSize,
             blocks: blocks,
+            rotation: orientation.uprightRotation,
             language: Self.dominantLanguage(of: text)
         )
     }

@@ -121,6 +121,10 @@ final class TextOrientationTests: XCTestCase {
         XCTAssertEqual(TextOrientation.dominant(baselines: []), .up)
     }
 
+    func testUprightRotationTurnsTheTextBackClockwise() {
+        XCTAssertEqual([TextOrientation.up, .runsUp, .down, .runsDown].map(\.uprightRotation), [0, 90, 180, 270])
+    }
+
     func testRoundTripsEveryOrientationExactly() {
         let box = Box(x: 0.1, y: 0.2, width: 0.3, height: 0.05)
         for orientation in [TextOrientation.up, .runsDown, .down, .runsUp] {

@@ -40,6 +40,16 @@ func storedSideways(_ image: CGImage) -> CGImage {
     return context.makeImage()!
 }
 
+func storedUpsideDown(_ image: CGImage) -> CGImage {
+    let context = CGContext(data: nil, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 0,
+                            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
+    context.translateBy(x: CGFloat(image.width), y: CGFloat(image.height))
+    context.rotate(by: .pi)
+    context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+    return context.makeImage()!
+}
+
 func write(_ image: CGImage, _ name: String, type: UTType, properties: [CFString: Any] = [:]) {
     let url = outDir.appendingPathComponent(name)
     let destination = CGImageDestinationCreateWithURL(url as CFURL, type.identifier as CFString, 1, nil)!
@@ -79,4 +89,6 @@ let receipt = render(
 write(receipt, "receipt.png", type: .png)
 // The same pixels stored sideways with no EXIF tag: the text itself runs bottom to top.
 write(storedSideways(receipt), "receipt-sideways.png", type: .png)
+// And upside down, also without a tag.
+write(storedUpsideDown(receipt), "receipt-upside-down.png", type: .png)
 

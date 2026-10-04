@@ -20,6 +20,7 @@ final class NativeOcrTests: XCTestCase {
             Total: 1,234.56 EUR
             """)
         XCTAssertEqual(result.language, "en")
+        XCTAssertEqual(result.rotation, 0)
     }
 
     func testWordBoxesMatchDrawnPositions() throws {
@@ -54,6 +55,7 @@ final class NativeOcrTests: XCTestCase {
 
         XCTAssertEqual(rotated.imageSize, CGSize(width: 1600, height: 1000))
         XCTAssertEqual(rotated.text, upright.text)
+        XCTAssertEqual(rotated.rotation, 0, "EXIF already turns it upright")
         let uprightLines = upright.blocks.flatMap(\.lines)
         let rotatedLines = rotated.blocks.flatMap(\.lines)
         for (a, b) in zip(uprightLines, rotatedLines) {
@@ -88,6 +90,20 @@ final class NativeOcrTests: XCTestCase {
         // Boxes stay in image coordinates: sideways lines are tall and narrow.
         let line = try XCTUnwrap(sideways.blocks.first?.lines.first)
         XCTAssertGreaterThan(line.box.height, line.box.width)
+        // The text runs bottom to top: a quarter turn clockwise makes it upright.
+        XCTAssertEqual(sideways.rotation, 90)
+    }
+
+    func testReadsUpsideDownReceiptLikeAnUprightOne() throws {
+        let upright = try ocr.recognize(fixture("receipt.png"), options: RecognizeOptions(languages: ["de-DE"]))
+
+        let upsideDown = try ocr.recognize(fixture("receipt-upside-down.png"), options: RecognizeOptions(languages: ["de-DE"]))
+
+        XCTAssertEqual(upsideDown.text, upright.text)
+        XCTAssertEqual(upsideDown.rotation, 180)
+        // Boxes stay in image coordinates: the heading, first in reading order, is at the bottom.
+        let heading = try XCTUnwrap(upsideDown.blocks.first?.lines.first)
+        XCTAssertGreaterThan(heading.box.y, 0.5)
     }
 
     func testRecognizesGermanUmlauts() throws {
@@ -130,6 +146,7 @@ final class NativeOcrTests: XCTestCase {
 
         XCTAssertEqual(result.text, "")
         XCTAssertTrue(result.blocks.isEmpty)
+        XCTAssertEqual(result.rotation, 0)
         XCTAssertNil(result.language)
     }
 
