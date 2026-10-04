@@ -64,3 +64,19 @@ write(render([
     Text(string: "Größere Änderungen für Übermorgen", x: 100, top: 300, size: 56, bold: false),
     Text(string: "Straße und Gebühren", x: 100, top: 380, size: 56, bold: false),
 ]), "print-de.png", type: .png)
+
+// A receipt: names on the left, prices far to the right, so Vision returns two columns.
+let receiptRows = [("Roggenbrot 750g", "3,40"), ("Mineralwasser 6x1L", "3,54"), ("Bananen", "1,76"), ("Joghurt Natur", "0,79")]
+let receipt = render(
+    [Text(string: "MUSTERMARKT", x: 100, top: 80, size: 64, bold: true)]
+        + receiptRows.enumerated().flatMap { index, row in
+            [Text(string: row.0, x: 100, top: 260 + CGFloat(index) * 90, size: 56, bold: false),
+             Text(string: row.1, x: 1250, top: 260 + CGFloat(index) * 90, size: 56, bold: false)]
+        }
+        + [Text(string: "SUMME EUR", x: 100, top: 700, size: 56, bold: true),
+           Text(string: "9,49", x: 1250, top: 700, size: 56, bold: true)]
+)
+write(receipt, "receipt.png", type: .png)
+// The same pixels stored sideways with no EXIF tag: the text itself runs bottom to top.
+write(storedSideways(receipt), "receipt-sideways.png", type: .png)
+

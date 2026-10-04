@@ -66,7 +66,8 @@ Apple Vision itself uses a bottom-left origin; the plugin converts it.
 
 - **Words** are separated by whitespace, so punctuation stays with its word (`Total:`, `1,234.56`).
 - **Confidence** is 0..1. Apple Vision scores whole lines, so on iOS each word carries its line's confidence.
-- **Tables:** Vision returns a table column by column. The plugin joins a column of short cells (prices, amounts) into the rows on its left, so a receipt reads `Milch 1,5% 1L 3,27` rather than all names followed by all prices. Two-column prose is left as columns.
+- **Tables:** Vision returns a table column by column. The plugin joins a column of short, mostly numeric cells (prices, amounts, quantities) into the rows on its left, so a receipt reads `Milch 1,5% 1L 3,27` rather than all names followed by all prices. Two-column prose and side-by-side text, such as a business card, are left as columns.
+- **Sideways pages:** Vision reads text that runs sideways or upside down. The plugin works out which way the lines run and orders them as if the page were upright; boxes stay in image coordinates.
 - **Single characters** standing alone, such as a quantity column of `1` and `2`, are often not returned by Apple Vision at all.
 - **Blocks:** Vision returns lines only. The plugin groups lines into blocks when a line sits right below the previous one, overlaps it horizontally and has a similar text height.
 - **`language`** is the dominant language of the recognized text (from Apple's NaturalLanguage framework), when it can be identified.

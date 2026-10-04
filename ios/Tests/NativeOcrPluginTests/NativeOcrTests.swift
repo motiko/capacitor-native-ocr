@@ -61,6 +61,35 @@ final class NativeOcrTests: XCTestCase {
         }
     }
 
+    func testReadsReceiptRowByRow() throws {
+        let result = try ocr.recognize(fixture("receipt.png"), options: RecognizeOptions(languages: ["de-DE"]))
+
+        XCTAssertEqual(result.text, """
+            MUSTERMARKT
+
+            Roggenbrot 750g 3,40
+            Mineralwasser 6x1L 3,54
+            Bananen 1,76
+            Joghurt Natur 0,79
+
+            SUMME EUR 9,49
+            """)
+    }
+
+    func testReadsSidewaysReceiptLikeAnUprightOne() throws {
+        let upright = try ocr.recognize(fixture("receipt.png"), options: RecognizeOptions(languages: ["de-DE"]))
+        let image = try fixture("receipt-sideways.png")
+        XCTAssertEqual(image.orientation, .up, "the fixture has no EXIF tag; the pixels are sideways")
+
+        let sideways = try ocr.recognize(image, options: RecognizeOptions(languages: ["de-DE"]))
+
+        XCTAssertEqual(sideways.text, upright.text)
+        XCTAssertEqual(sideways.imageSize, CGSize(width: 1000, height: 1600))
+        // Boxes stay in image coordinates: sideways lines are tall and narrow.
+        let line = try XCTUnwrap(sideways.blocks.first?.lines.first)
+        XCTAssertGreaterThan(line.box.height, line.box.width)
+    }
+
     func testRecognizesGermanUmlauts() throws {
         let result = try ocr.recognize(fixture("print-de.png"), options: RecognizeOptions(languages: ["de-DE"]))
 

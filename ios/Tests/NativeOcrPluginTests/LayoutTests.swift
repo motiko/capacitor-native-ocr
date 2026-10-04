@@ -73,6 +73,27 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(Layout.mergeTableColumns(left + right).map(\.text), (left + right).map(\.text))
     }
 
+    func testKeepsSideBySideTextBlocksAsColumns() {
+        // A business card: name on the left, address on the right, rows aligned.
+        let lines = [
+            line("Musterfirma GmbH", y: 0.30, height: 0.05, width: 0.35),
+            line("Dokumente Scannen", y: 0.37, height: 0.05, width: 0.35),
+            line("Beispielstraße 1", y: 0.30, height: 0.05, x: 0.55, width: 0.35),
+            line("00000 Musterstadt", y: 0.37, height: 0.05, x: 0.55, width: 0.35)
+        ]
+
+        XCTAssertEqual(Layout.mergeTableColumns(lines).map(\.text), lines.map(\.text))
+    }
+
+    func testNumericCells() {
+        XCTAssertTrue(Layout.isNumeric("3,27"))
+        XCTAssertTrue(Layout.isNumeric("30,00 €"))
+        XCTAssertTrue(Layout.isNumeric("2"))
+        XCTAssertFalse(Layout.isNumeric("Beispielstraße 1"))
+        XCTAssertFalse(Layout.isNumeric("Einzelpreis"))
+        XCTAssertFalse(Layout.isNumeric(" "))
+    }
+
     func testResolvesLanguagesToVisionIdentifiers() throws {
         let supported = ["en-US", "fr-FR", "de-DE", "zh-Hans", "zh-Hant"]
 
@@ -88,5 +109,32 @@ final class LayoutTests: XCTestCase {
         let box = Box(x: x, y: y, width: width, height: height)
         let words = text.split(separator: " ").map { OcrWord(text: String($0), box: box, confidence: 1) }
         return OcrLine(text: text, box: box, confidence: 1, words: words)
+    }
+}
+
+final class TextOrientationTests: XCTestCase {
+    func testDominantDirectionWeighsLongLines() {
+        XCTAssertEqual(TextOrientation.dominant(baselines: [(dx: 100, dy: 2), (dx: -10, dy: 0)]), .up)
+        XCTAssertEqual(TextOrientation.dominant(baselines: [(dx: 3, dy: 200)]), .runsDown)
+        XCTAssertEqual(TextOrientation.dominant(baselines: [(dx: 0, dy: -150), (dx: 20, dy: 0)]), .runsUp)
+        XCTAssertEqual(TextOrientation.dominant(baselines: [(dx: -80, dy: 1)]), .down)
+        XCTAssertEqual(TextOrientation.dominant(baselines: []), .up)
+    }
+
+    func testRoundTripsEveryOrientationExactly() {
+        let box = Box(x: 0.1, y: 0.2, width: 0.3, height: 0.05)
+        for orientation in [TextOrientation.up, .runsDown, .down, .runsUp] {
+            XCTAssertTrue(orientation.toImage(orientation.toText(box)).isClose(to: box, tolerance: 1e-12), "\(orientation)")
+        }
+    }
+
+    func testSidewaysLineBecomesHorizontal() {
+        // Text running top to bottom near the right edge: a tall, narrow box.
+        let box = Box(x: 0.8, y: 0.1, width: 0.05, height: 0.6)
+        let turned = TextOrientation.runsDown.toText(box)
+
+        XCTAssertGreaterThan(turned.width, turned.height)
+        // The right-hand column is the first line once the page is upright.
+        XCTAssertEqual(turned.y, 0.15, accuracy: 1e-9)
     }
 }

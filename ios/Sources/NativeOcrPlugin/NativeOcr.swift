@@ -9,6 +9,9 @@ struct RecognizeOptions {
     var level: VNRequestTextRecognitionLevel = .accurate
     var languageCorrection = true
     var customWords: [String] = []
+    /// Join table columns into rows (`Layout.mergeTableColumns`). Not exposed to JavaScript;
+    /// the benchmark turns it off to measure its effect.
+    var tableRows = true
 }
 
 struct RecognizeResult {
@@ -52,8 +55,16 @@ struct RecognizeResult {
         }
 
         // With an orientation given, Vision reports coordinates in the upright image.
-        let lines = (request.results ?? []).compactMap(Self.line(from:))
-        let blocks = Layout.groupIntoBlocks(Layout.mergeTableColumns(lines))
+        let observations = request.results ?? []
+        let size = image.orientedSize
+        let orientation = TextOrientation.dominant(baselines: observations.map { observation in
+            (dx: Double(observation.topRight.x - observation.topLeft.x) * size.width,
+             dy: -Double(observation.topRight.y - observation.topLeft.y) * size.height)
+        })
+        // Layout runs in the text's frame, so a sideways page groups and orders like an upright one.
+        let lines = observations.compactMap { Self.line(from: $0, orientation: orientation) }.map(orientation.toText)
+        let blocks = Layout.groupIntoBlocks(options.tableRows ? Layout.mergeTableColumns(lines) : lines)
+            .map(orientation.toImage)
         let text = Layout.text(of: blocks)
         return RecognizeResult(
             text: text,
@@ -87,7 +98,7 @@ struct RecognizeResult {
         return resolved
     }
 
-    private static func line(from observation: VNRecognizedTextObservation) -> OcrLine? {
+    private static func line(from observation: VNRecognizedTextObservation, orientation: TextOrientation) -> OcrLine? {
         guard let candidate = observation.topCandidates(1).first else { return nil }
         let text = candidate.string
         let lineBox = Box(visionRect: observation.boundingBox)
@@ -104,7 +115,9 @@ struct RecognizeResult {
             }
             return OcrWord(
                 text: String(text[range]),
-                box: box ?? Layout.estimatedWordBox(for: range, in: text, lineBox: lineBox),
+                box: box ?? orientation.toImage(
+                    Layout.estimatedWordBox(for: range, in: text, lineBox: orientation.toText(lineBox))
+                ),
                 confidence: confidence
             )
         }

@@ -115,55 +115,65 @@ enum Layout {
 
     /// Puts table cells back into rows. Vision returns a table column by column, so a receipt
     /// reads as all item names, then all prices. A column to the right of another is merged into
-    /// it row by row when its lines are short (median ≤ 3 words) and at least 60 % of them sit
-    /// on the same row as a line on the left. Two-column prose has long lines and stays as is.
+    /// it row by row when its lines are short (median ≤ 3 words), mostly numbers (prices,
+    /// amounts, quantities), and at least 60 % of them sit on the same row as a line on the left.
+    /// Two-column prose and side-by-side text blocks, such as a business card, stay as columns.
     static func mergeTableColumns(_ lines: [OcrLine]) -> [OcrLine] {
         var columns = groupIntoBlocks(lines).map(\.lines)
-        var changed = true
-        while changed {
-            changed = false
-            search: for left in columns.indices {
-                for right in columns.indices where right != left {
-                    if let merged = tableRows(left: columns[left], right: columns[right]) {
-                        columns[left] = merged.rows
-                        if merged.rest.isEmpty {
-                            columns.remove(at: right)
-                        } else {
-                            columns[right] = merged.rest
-                        }
-                        changed = true
-                        break search
-                    }
-                }
+        while let merge = nextTableMerge(columns) {
+            for (cell, partner) in merge.partners {
+                columns[partner.column][partner.line] = joined(columns[partner.column][partner.line], columns[merge.column][cell])
             }
+            // Cells without a row stay a column of their own, so a later pass can pair them.
+            let joinedCells = Set(merge.partners.map(\.cell))
+            columns[merge.column] = columns[merge.column].enumerated().filter { !joinedCells.contains($0.offset) }.map(\.element)
+            columns.removeAll(where: \.isEmpty)
         }
         return columns.flatMap { $0 }
     }
 
-    /// The left column with the right column's cells joined into its rows, plus the right
-    /// cells that have no row on the left (they stay a column of their own, so a later pass can
-    /// pair them with another column), or nil when the right column doesn't look like table cells.
-    private static func tableRows(left: [OcrLine], right: [OcrLine]) -> (rows: [OcrLine], rest: [OcrLine])? {
-        let wordCounts = right.map(\.words.count).sorted()
-        guard wordCounts[wordCounts.count / 2] <= 3 else { return nil }
+    private struct TableMerge {
+        let column: Int
+        /// Each joined cell's index in `column`, with the line it joins.
+        let partners: [(cell: Int, partner: (column: Int, line: Int))]
+    }
 
-        // Index of the left line on the same row as each right line, if any.
-        let partners = right.map { cell in
-            left.firstIndex { sameRow($0.box, cell.box) && $0.box.maxX < cell.box.x }
-        }
-        let aligned = partners.compactMap { $0 }.count
-        guard aligned > 0, Double(aligned) >= 0.6 * Double(right.count) else { return nil }
+    /// A column of table cells and, for each cell, the line on its row to its left in any
+    /// other column (the nearest one). The left side of a table often splits into several
+    /// blocks, so partners aren't limited to one column.
+    private static func nextTableMerge(_ columns: [[OcrLine]]) -> TableMerge? {
+        for (index, cells) in columns.enumerated() {
+            let wordCounts = cells.map(\.words.count).sorted()
+            guard wordCounts[wordCounts.count / 2] <= 3,
+                  Double(cells.filter { isNumeric($0.text) }.count) >= 0.6 * Double(cells.count)
+            else { continue }
 
-        var rows = left
-        var rest: [OcrLine] = []
-        for (cell, partner) in zip(right, partners) {
-            if let partner {
-                rows[partner] = joined(rows[partner], cell)
-            } else {
-                rest.append(cell)
+            var partners: [(cell: Int, partner: (column: Int, line: Int))] = []
+            for (cellIndex, cell) in cells.enumerated() {
+                var best: (column: Int, line: Int, maxX: Double)?
+                for (other, lines) in columns.enumerated() where other != index {
+                    for (lineIndex, line) in lines.enumerated()
+                    where sameRow(line.box, cell.box) && line.box.maxX < cell.box.x && line.box.maxX > (best?.maxX ?? -1) {
+                        best = (other, lineIndex, line.box.maxX)
+                    }
+                }
+                if let best {
+                    partners.append((cellIndex, (best.column, best.line)))
+                }
+            }
+            if !partners.isEmpty, Double(partners.count) >= 0.6 * Double(cells.count) {
+                return TableMerge(column: index, partners: partners)
             }
         }
-        return (rows, rest)
+        return nil
+    }
+
+    /// At least half of the non-space characters are digits; currency signs, separators and
+    /// units don't count against it ("12,50 €", "2", "3 × 1,29").
+    static func isNumeric(_ text: String) -> Bool {
+        let characters = text.filter { !$0.isWhitespace }
+        guard !characters.isEmpty else { return false }
+        return Double(characters.filter(\.isNumber).count) >= 0.5 * Double(characters.count)
     }
 
     private static func sameRow(_ a: Box, _ b: Box) -> Bool {
