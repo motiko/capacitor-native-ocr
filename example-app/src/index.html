@@ -1,26 +1,73 @@
 <!doctype html>
-<html lang="en" dir="ltr" class="hydrated">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Example Capacitor App</title>
-    <meta
-      name="viewport"
-      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <meta name="format-detection" content="telephone=no" />
+    <title>Native OCR example</title>
+    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font: 16px -apple-system, system-ui, sans-serif;
+        margin: 0;
+        padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+      }
+      fieldset {
+        border: 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+      #stage {
+        position: relative;
+        margin-top: 16px;
+      }
+      #stage img,
+      #stage canvas {
+        width: 100%;
+        display: block;
+      }
+      #stage canvas {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+      }
+      pre {
+        white-space: pre-wrap;
+        background: #f2f2f2;
+        padding: 12px;
+        border-radius: 8px;
+      }
+      .muted {
+        color: #666;
+        font-size: 14px;
+      }
+    </style>
   </head>
   <body>
-    <main>
-      <h1>Capacitor Test Plugin Project</h1>
-      <p>
-        This project can be used to test out the functionality of your plugin. Nothing in the
-        <em>example-app/</em> folder will be published to npm when using this template, so you can create away!
-      </p>
-      <label for="echoInput">Echo Text:</label>
-      <input type="text" id="echoInput" name="echoInput" value="Hello World!" />
-      <button onclick="testEcho()">Click Me!</button>
-    </main>
-
+    <h1>Native OCR</h1>
+    <p id="status" class="muted">Checking availability…</p>
+    <fieldset>
+      <label>Image <input type="file" id="file" accept="image/*" /></label>
+      <label>Languages <input type="text" id="languages" placeholder="de-DE, en-US (empty: detect)" /></label>
+      <label>
+        Level
+        <select id="level">
+          <option value="accurate">accurate</option>
+          <option value="fast">fast</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="correction" checked /> Language correction</label>
+      <button id="run" disabled>Recognize</button>
+    </fieldset>
+    <div id="stage">
+      <img id="preview" alt="" />
+      <canvas id="overlay"></canvas>
+    </div>
+    <p id="summary" class="muted"></p>
+    <pre id="text"></pre>
+    <details>
+      <summary>Supported languages</summary>
+      <p id="supported" class="muted"></p>
+    </details>
     <script src="./js/example.js" type="module"></script>
   </body>
 </html>

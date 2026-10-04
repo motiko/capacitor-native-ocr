@@ -1,6 +1,6 @@
 {
-  "appId": "com.example.plugin",
-  "appName": "example-app",
+  "appId": "dev.motiko.nativeocr.example",
+  "appName": "Native OCR",
   "webDir": "dist",
   "plugins": {
     "SplashScreen": {

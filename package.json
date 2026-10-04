@@ -1,7 +1,7 @@
 {
   "name": "capacitor-native-ocr",
-  "version": "0.0.1",
-  "description": "On-device OCR for Capacitor: Apple Vision on iOS, ML Kit on Android, with word-level boxes",
+  "version": "0.1.0",
+  "description": "On-device OCR for Capacitor with word-level boxes: Apple Vision on iOS, ML Kit on Android",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -27,7 +27,13 @@
   "keywords": [
     "capacitor",
     "plugin",
-    "native"
+    "native",
+    "ocr",
+    "text-recognition",
+    "vision",
+    "mlkit",
+    "ios",
+    "android"
   ],
   "scripts": {
     "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
@@ -43,7 +49,8 @@
     "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test:ios": "xcodebuild test -scheme CapacitorNativeOcr -destination 'platform=iOS Simulator,name=iPhone 17'"
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.0",
@@ -76,5 +83,10 @@
     "android": {
       "src": "android"
     }
+  },
+  "homepage": "https://github.com/motiko/capacitor-native-ocr#readme",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

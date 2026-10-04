@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run eslint
+      - run: npx prettier --check "src/**/*.ts"
+      - run: npm run build
+      - name: README matches the API docs
+        run: git diff --exit-code README.md
+
+  ios:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run swiftlint -- lint
+      - name: Unit and recognition tests (SPM)
+        run: |
+          SIM=$(xcrun simctl list devices available -j | jq -r '[.devices[][] | select(.name | startswith("iPhone"))][0].udid')
+          xcodebuild test -scheme CapacitorNativeOcr -destination "platform=iOS Simulator,id=$SIM"
+      - name: Example app builds
+        run: |
+          npm run build
+          cd example-app
+          npm ci
+          npm run build
+          npx cap sync ios
+          xcodebuild build -project ios/App/App.xcodeproj -scheme App \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO

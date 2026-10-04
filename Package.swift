@@ -19,10 +19,12 @@ let package = Package(
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
                 .product(name: "Cordova", package: "capacitor-swift-pm")
             ],
-            path: "ios/Sources/NativeOcrPlugin"),
+            path: "ios/Sources/NativeOcrPlugin",
+            resources: [.copy("PrivacyInfo.xcprivacy")]),
         .testTarget(
             name: "NativeOcrPluginTests",
             dependencies: ["NativeOcrPlugin"],
-            path: "ios/Tests/NativeOcrPluginTests")
+            path: "ios/Tests/NativeOcrPluginTests",
+            resources: [.copy("Fixtures")])
     ]
 )
