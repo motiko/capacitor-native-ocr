@@ -60,6 +60,15 @@
   <body>
     <h1>Native OCR</h1>
     <p id="status" class="muted">Checking availability…</p>
+    <section id="bench" hidden>
+      <h2>Benchmark</h2>
+      <p id="bench-name" class="muted"></p>
+      <button id="bench-run">Run benchmark</button>
+      <button id="bench-copy" disabled>Copy results</button>
+      <p id="bench-status" class="muted"></p>
+      <table id="bench-table"></table>
+      <textarea id="bench-output" rows="6" readonly hidden></textarea>
+    </section>
     <fieldset>
       <label>Image <input type="file" id="file" accept="image/*" /></label>
       <label>Languages <input type="text" id="languages" placeholder="de-DE, en-US (empty: detect)" /></label>
@@ -79,15 +88,6 @@
     </div>
     <p id="summary" class="muted"></p>
     <pre id="text"></pre>
-    <section id="bench" hidden>
-      <h2>Benchmark</h2>
-      <p id="bench-name" class="muted"></p>
-      <button id="bench-run">Run benchmark</button>
-      <button id="bench-copy" disabled>Copy results</button>
-      <p id="bench-status" class="muted"></p>
-      <table id="bench-table"></table>
-      <textarea id="bench-output" rows="6" readonly hidden></textarea>
-    </section>
     <details>
       <summary>Supported languages</summary>
       <p id="supported" class="muted"></p>
