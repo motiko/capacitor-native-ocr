@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-ocr",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "On-device OCR for Capacitor with word-level boxes: Apple Vision on iOS, ML Kit on Android",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
