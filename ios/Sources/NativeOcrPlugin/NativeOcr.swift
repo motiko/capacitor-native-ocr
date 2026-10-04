@@ -53,7 +53,7 @@ struct RecognizeResult {
 
         // With an orientation given, Vision reports coordinates in the upright image.
         let lines = (request.results ?? []).compactMap(Self.line(from:))
-        let blocks = Layout.groupIntoBlocks(lines)
+        let blocks = Layout.groupIntoBlocks(Layout.mergeTableColumns(lines))
         let text = Layout.text(of: blocks)
         return RecognizeResult(
             text: text,

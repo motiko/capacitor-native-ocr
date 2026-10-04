@@ -47,6 +47,32 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(Layout.text(of: blocks), "Heading\n\nfirst\nsecond\n\nafter gap\n\nright column")
     }
 
+    func testMergesReceiptPricesIntoRows() {
+        // Vision's order: the names column, then the prices column, then the total line.
+        let lines = [
+            line("3 x Milch", y: 0.30, height: 0.03, width: 0.3),
+            line("Apfel lose", y: 0.34, height: 0.03, width: 0.3),
+            line("Bananen", y: 0.38, height: 0.03, width: 0.3),
+            line("3,27", y: 0.301, height: 0.03, x: 0.7, width: 0.1),
+            line("2,87", y: 0.341, height: 0.03, x: 0.7, width: 0.1),
+            line("1,76", y: 0.381, height: 0.03, x: 0.7, width: 0.1),
+            line("Vielen Dank", y: 0.42, height: 0.03, width: 0.3)
+        ]
+
+        let merged = Layout.mergeTableColumns(lines)
+
+        XCTAssertEqual(merged.map(\.text), ["3 x Milch 3,27", "Apfel lose 2,87", "Bananen 1,76", "Vielen Dank"])
+        XCTAssertEqual(merged[0].words.map(\.text), ["3", "x", "Milch", "3,27"])
+        XCTAssertEqual(merged[0].box.maxX, 0.8, accuracy: 1e-9)
+    }
+
+    func testKeepsTwoColumnProseAsColumns() {
+        let left = (0..<4).map { line("left column line \($0) with several words", y: 0.3 + Double($0) * 0.04, height: 0.03, width: 0.4) }
+        let right = (0..<4).map { line("right column line \($0) with several words", y: 0.3 + Double($0) * 0.04, height: 0.03, x: 0.55, width: 0.4) }
+
+        XCTAssertEqual(Layout.mergeTableColumns(left + right).map(\.text), (left + right).map(\.text))
+    }
+
     func testResolvesLanguagesToVisionIdentifiers() throws {
         let supported = ["en-US", "fr-FR", "de-DE", "zh-Hans", "zh-Hant"]
 
@@ -58,8 +84,9 @@ final class LayoutTests: XCTestCase {
         }
     }
 
-    private func line(_ text: String, y: Double, height: Double, x: Double = 0.1) -> OcrLine {
-        let box = Box(x: x, y: y, width: 0.4, height: height)
-        return OcrLine(text: text, box: box, confidence: 1, words: [OcrWord(text: text, box: box, confidence: 1)])
+    private func line(_ text: String, y: Double, height: Double, x: Double = 0.1, width: Double = 0.4) -> OcrLine {
+        let box = Box(x: x, y: y, width: width, height: height)
+        let words = text.split(separator: " ").map { OcrWord(text: String($0), box: box, confidence: 1) }
+        return OcrLine(text: text, box: box, confidence: 1, words: words)
     }
 }

@@ -113,6 +113,69 @@ enum Layout {
         }
     }
 
+    /// Puts table cells back into rows. Vision returns a table column by column, so a receipt
+    /// reads as all item names, then all prices. A column to the right of another is merged into
+    /// it row by row when its lines are short (median ≤ 3 words) and at least 60 % of them sit
+    /// on the same row as a line on the left. Two-column prose has long lines and stays as is.
+    static func mergeTableColumns(_ lines: [OcrLine]) -> [OcrLine] {
+        var columns = groupIntoBlocks(lines).map(\.lines)
+        var changed = true
+        while changed {
+            changed = false
+            search: for left in columns.indices {
+                for right in columns.indices where right != left {
+                    if let merged = tableRows(left: columns[left], right: columns[right]) {
+                        columns[left] = merged.rows
+                        if merged.rest.isEmpty {
+                            columns.remove(at: right)
+                        } else {
+                            columns[right] = merged.rest
+                        }
+                        changed = true
+                        break search
+                    }
+                }
+            }
+        }
+        return columns.flatMap { $0 }
+    }
+
+    /// The left column with the right column's cells joined into its rows, plus the right
+    /// cells that have no row on the left (they stay a column of their own, so a later pass can
+    /// pair them with another column), or nil when the right column doesn't look like table cells.
+    private static func tableRows(left: [OcrLine], right: [OcrLine]) -> (rows: [OcrLine], rest: [OcrLine])? {
+        let wordCounts = right.map(\.words.count).sorted()
+        guard wordCounts[wordCounts.count / 2] <= 3 else { return nil }
+
+        // Index of the left line on the same row as each right line, if any.
+        let partners = right.map { cell in
+            left.firstIndex { sameRow($0.box, cell.box) && $0.box.maxX < cell.box.x }
+        }
+        let aligned = partners.compactMap { $0 }.count
+        guard aligned > 0, Double(aligned) >= 0.6 * Double(right.count) else { return nil }
+
+        var rows = left
+        var rest: [OcrLine] = []
+        for (cell, partner) in zip(right, partners) {
+            if let partner {
+                rows[partner] = joined(rows[partner], cell)
+            } else {
+                rest.append(cell)
+            }
+        }
+        return (rows, rest)
+    }
+
+    private static func sameRow(_ a: Box, _ b: Box) -> Bool {
+        let overlap = min(a.maxY, b.maxY) - max(a.y, b.y)
+        return overlap >= 0.5 * min(a.height, b.height)
+    }
+
+    private static func joined(_ a: OcrLine, _ b: OcrLine) -> OcrLine {
+        let confidence = [a.confidence, b.confidence].compactMap { $0 }.min()
+        return OcrLine(text: a.text + " " + b.text, box: a.box.union(b.box), confidence: confidence, words: a.words + b.words)
+    }
+
     /// Lines joined by `\n`, blocks separated by an empty line.
     static func text(of blocks: [OcrBlock]) -> String {
         blocks.map(\.text).joined(separator: "\n\n")
