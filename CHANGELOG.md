@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 (2026-10-04)
 
 - `rotation` in the result: how far to turn the image clockwise so its text reads upright (iOS: from the direction Vision's lines run, no extra passes).
 - Android: text recognition with ML Kit Text Recognition v2 and the bundled Latin model, with the same result shape, layout and `rotation` as iOS: word, line and block boxes; receipts read row by row; sideways and upside-down pages ordered as if upright (ML Kit reads them in one pass, so no extra passes); EXIF orientation applied; `isAvailable()` returns `true`.
