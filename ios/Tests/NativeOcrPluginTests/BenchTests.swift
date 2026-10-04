@@ -20,7 +20,7 @@ final class BenchTests: XCTestCase {
     private struct Output: Encodable {
         let id: String
         let text: String
-        let ms: Double
+        let ms: Double // swiftlint:disable:this identifier_name (the JSON key ocr-compare reads)
     }
 
     func testRunBenchJobs() throws {

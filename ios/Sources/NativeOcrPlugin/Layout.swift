@@ -1,3 +1,5 @@
+// Geometry keeps the short names of the JavaScript API (x, y) and of pairs of boxes (a, b).
+// swiftlint:disable identifier_name
 import CoreGraphics
 import Foundation
 

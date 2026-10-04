@@ -58,8 +58,8 @@ final class NativeOcrTests: XCTestCase {
         XCTAssertEqual(rotated.rotation, 0, "EXIF already turns it upright")
         let uprightLines = upright.blocks.flatMap(\.lines)
         let rotatedLines = rotated.blocks.flatMap(\.lines)
-        for (a, b) in zip(uprightLines, rotatedLines) {
-            XCTAssertTrue(a.box.isClose(to: b.box, tolerance: 0.01), "\(a.box) vs \(b.box)")
+        for (uprightLine, rotatedLine) in zip(uprightLines, rotatedLines) {
+            XCTAssertTrue(uprightLine.box.isClose(to: rotatedLine.box, tolerance: 0.01), "\(uprightLine.box) vs \(rotatedLine.box)")
         }
     }
 
